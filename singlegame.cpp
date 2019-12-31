@@ -1,6 +1,6 @@
 #include "SingleGame.h"
-
-
+#include <QTimer>
+#include <QDebug.h>
 void SingleGame::click(int id , int row ,int col){
     //防止黑瞎走
     if(!this->_redTime){
@@ -11,10 +11,9 @@ void SingleGame::click(int id , int row ,int col){
 
     //加判断看是人走还是电脑走
     if(!this->_redTime){
-        //该电脑走
-        Step* step = getBestMove();
-        moveChess(step->_moveid,step->_killid,step->_rowTo,step->_colTo);
-        delete step;
+        //启动一个定时器0.1秒
+        //让棋盘刷新一下，再开始思考如何去走
+        QTimer::singleShot(100, this , SLOT(computerMove()));
     }
 }
 
@@ -82,7 +81,7 @@ Step * SingleGame::getBestMoveByMaxMin(){
         //程序走一步看看局面
         fakeMove(step);
         //计算局面分
-        int score = getMinScore();
+        int score = getMinScore(_level,maxScore);
         //把棋子移动回来
         unfakeMove(step);
 
@@ -102,7 +101,9 @@ Step * SingleGame::getBestMoveByMaxMin(){
     return good;
 }
 //
-int SingleGame::getMinScore(){
+int SingleGame::getMinScore(int level ,int curMaxScore){
+    //如果不需要计算机了，那就直接计算当前局面分
+    if(level == 0) return calcScore();
     //看看可以走哪一些步骤
     QVector<Step*> steps;
     getAllPossibleMove(steps);
@@ -113,9 +114,19 @@ int SingleGame::getMinScore(){
         //程序走一步看看局面
         fakeMove(step);
         //计算局面分
-        int score = calcScore();
+        int score = getMaxScore(level - 1, minScore);
         //把棋子移动回来
         unfakeMove(step);
+
+        //剪枝优化
+        if(score <= curMaxScore){
+            while (steps.count()) {
+                delete step;
+                step = steps.back();
+                steps.removeLast();
+            }
+            return score;
+        }
         //把分数记录下来,并且记录步骤
         if(score < minScore){
             minScore = score;
@@ -124,6 +135,44 @@ int SingleGame::getMinScore(){
     }
     return minScore;
 
+}
+
+int SingleGame::getMaxScore(int level, int curMinScore){
+    //如果不需要计算了，那就直接计算当前局面分
+    if(level == 0) return calcScore();
+    //看看可以走哪一些步骤
+    QVector<Step*> steps;
+    getAllPossibleMove(steps);
+    int maxScore = -1000000;
+    while (steps.count()) {
+        Step * step = steps.back();
+        steps.removeLast();
+        //程序走一步看看局面
+        fakeMove(step);
+        //计算局面分
+        int score = getMinScore(level - 1, maxScore);
+        //把棋子移动回来
+        unfakeMove(step);
+
+
+        //剪枝优化
+        if(score >= curMinScore){
+            while (steps.count()) {
+                delete step;
+                step = steps.back();
+                steps.removeLast();
+            }
+            return score;
+        }
+
+
+        //把分数记录下来,并且记录步骤
+        if(score > maxScore){
+            maxScore = score;
+        }
+        delete step;
+    }
+    return maxScore;
 }
 //暴力
 Step * SingleGame::getBestMoveByForce(){
@@ -203,4 +252,13 @@ int SingleGame::calcScore(){
     }
     //得分
     return blackScore-redScore;
+}
+//让电脑开始走棋
+void SingleGame::computerMove(){
+    qDebug() << "开始了";
+    //该电脑走
+    Step* step = getBestMove();
+    moveChess(step->_moveid,step->_killid,step->_rowTo,step->_colTo);
+    delete step;
+    update();
 }

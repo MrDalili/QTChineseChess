@@ -440,7 +440,6 @@ void Board::moveChess(int moveid, int killid, int row, int col){
     killChess(killid);
     moveChess(moveid, row, col);
 
-    _redTime = !_redTime;
 }
 Board::~Board(){
 

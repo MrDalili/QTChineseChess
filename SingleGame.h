@@ -6,8 +6,14 @@
 
 class SingleGame : public Board
 {
-
+    Q_OBJECT
 public:
+    SingleGame(){
+        _level = 6;
+    }
+    //电脑需要考虑的层次
+    int _level;
+
     //重载click函数
     void click(int id , int row ,int col);
     //实现电脑走
@@ -26,7 +32,10 @@ public:
     Step * getBestMoveByForce();
     //最大最小值算法
     Step * getBestMoveByMaxMin();
-    int getMinScore();
+    int getMinScore(int level, int curMaxScore);
+    int getMaxScore(int level, int curMinSocer);
+public slots:
+    void computerMove();
 };
 
 #endif // SINGLEGAME_H
