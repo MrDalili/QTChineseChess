@@ -9,7 +9,7 @@ class SingleGame : public Board
     Q_OBJECT
 public:
     SingleGame(){
-        _level = 6;
+        _level = 4;
     }
     //电脑需要考虑的层次
     int _level;

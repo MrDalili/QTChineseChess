@@ -232,27 +232,27 @@ void SingleGame::unfakeMove(Step* step){
     reliveChess(step->_killid);
     moveChess(step->_moveid,step->_rowFrom,step->_colFrom);
 }
-//计算当前局面得分
-int SingleGame::calcScore(){
-    int redScore = 0;
-    int blackScore = 0;
-    /*按照棋子的种类来分类*/
-    //enum TYPE{ JIANG, CHE, PAO, MA, BING, SHI, XIANG};
-    static int chessScore[] = {1500,100,50,50,20,10,10};
-    //黑棋分的总数减去红棋分的总数
-    //红棋的分数
-    for (int i = 16 ; i < 32 ; i++) {
-        if(_list[i]._die) continue;
-        redScore += chessScore[_list->_type];
+    //计算当前局面得分
+    int SingleGame::calcScore(){
+        int redScore = 0;
+        int blackScore = 0;
+        /*按照棋子的种类来分类*/
+        //enum TYPE{ JIANG, CHE, PAO, MA, BING, SHI, XIANG};
+        static int chessScore[] = {1500,100,50,50,20,10,10};
+        //黑棋分的总数减去红棋分的总数
+        //红棋的分数
+        for (int i = 16 ; i < 32 ; i++) {
+            if(_list[i]._die) continue;
+            redScore += chessScore[_list->_type];
+        }
+        //黑棋的分数
+        for (int i = 0 ; i < 16 ; i++) {
+            if(_list[i]._die) continue;
+            blackScore += chessScore[_list->_type];
+        }
+        //得分
+        return blackScore-redScore;
     }
-    //黑棋的分数
-    for (int i = 0 ; i < 16 ; i++) {
-        if(_list[i]._die) continue;
-        blackScore += chessScore[_list->_type];
-    }
-    //得分
-    return blackScore-redScore;
-}
 //让电脑开始走棋
 void SingleGame::computerMove(){
     qDebug() << "开始了";
